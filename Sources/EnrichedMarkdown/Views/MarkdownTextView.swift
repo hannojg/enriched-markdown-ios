@@ -28,6 +28,18 @@ final class MarkdownTextView: UITextView, SelectionHandleTouchReporting, Markdow
     /// document. This can.
     private var renderedText: NSAttributedString?
 
+    private lazy var initialReveal = MarkdownInitialRevealAnimator(textView: self)
+    var initialRevealEnabled = false {
+        didSet {
+            guard initialRevealEnabled != oldValue else { return }
+            if initialRevealEnabled {
+                initialReveal.prepare()
+            } else {
+                initialReveal.finish()
+            }
+        }
+    }
+
     private struct CachedFit {
         let width: CGFloat
         let text: NSAttributedString
@@ -402,6 +414,9 @@ final class MarkdownTextView: UITextView, SelectionHandleTouchReporting, Markdow
         trackEnclosingScrollView()
         setDecorationNeedsDisplay()
         spoilerOverlays.update()
+        if initialRevealEnabled, let renderedText, renderedText.length > 0 {
+            initialReveal.layout(content: renderedText)
+        }
     }
 
     override func didMoveToWindow() {

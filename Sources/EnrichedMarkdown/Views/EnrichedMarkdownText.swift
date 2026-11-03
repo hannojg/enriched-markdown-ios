@@ -12,6 +12,7 @@ public struct EnrichedMarkdownText: View {
     @Environment(\.markdownLinkPressHandler) private var onLinkPress
     @Environment(\.markdownLinkLongPressHandler) private var onLinkLongPress
     @Environment(\.markdownSelectionMenu) private var selectionMenuConfig
+    @Environment(\.markdownInitialReveal) private var initialRevealEnabled
     @Environment(\.markdownSelectable) private var isSelectionEnabled
     @Environment(\.markdownSelectionColor) private var selectionColor
     @Environment(\.markdownImageRequestHeaders) private var imageRequestHeaders
@@ -68,6 +69,7 @@ public struct EnrichedMarkdownText: View {
             onLinkLongPress: onLinkLongPress,
             selectionMenuConfig: selectionMenuConfig,
             isSelectionEnabled: isSelectionEnabled,
+            initialRevealEnabled: initialRevealEnabled,
             selectionColor: selectionColor,
             onTaskListItemTap: isTaskListToggleEnabled ? { hit in
                 let checked = !hit.checked

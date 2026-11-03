@@ -13,6 +13,7 @@ struct MarkdownTextViewRepresentable: UIViewRepresentable {
     let onLinkLongPress: ((URL) -> Void)?
     let selectionMenuConfig: MarkdownSelectionMenu
     let isSelectionEnabled: Bool
+    let initialRevealEnabled: Bool
     let selectionColor: Color?
     let onTaskListItemTap: ((TaskListInteraction.Hit) -> Void)?
     let spoilerOverlay: any SpoilerOverlayProvider
@@ -40,6 +41,7 @@ struct MarkdownTextViewRepresentable: UIViewRepresentable {
         textView.onLinkPress = onLinkPress ?? openURL
         textView.styleConfig = styleConfig
         textView.isSelectionEnabled = isSelectionEnabled
+        textView.initialRevealEnabled = initialRevealEnabled
         textView.tintColor = selectionColor.map { UIColor($0) }
         textView.onTaskListItemTap = onTaskListItemTap
         textView.spoilerOverlays.provider = spoilerOverlay

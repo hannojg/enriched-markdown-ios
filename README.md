@@ -852,3 +852,20 @@ yarn workspace @enriched-markdown/ios bench:ios-native --base main
 Absolute numbers depend on the machine and on Debug builds; read the head/base ratio from one run. Each number is the median of XCTest's iterations, so a single stalled iteration does not move it. CI runs the same comparison on demand: label a pull request `benchmark: ios` (later pushes re-run it while the label stays), comment `/benchmark ios` on it, or start the "iOS benchmarks" workflow from the Actions tab. Each run posts the table as a new comment on the pull request, headed by the commit it measured, and the job fails only when a benchmark is twice as slow, since a shared runner cannot resolve smaller differences.
 
 In the monorepo, `core/md4c` and `core/parser` are symlinks into the shared C++ sources at `packages/core/cpp`, and so are the highlighting seam, the tree-sitter runtime, and the grammars under `highlight/`. The tree-sitter files are not checked in: after `yarn install`, `node vendor/vendor-grammars.mjs` (run from the monorepo root, also part of `yarn prepare`) restores them. When syncing this folder to the standalone repository, dereference the symlinks so real files are copied (e.g. `rsync -a --copy-links`).
+
+## Initial gradient reveal
+
+Use `.markdownInitialReveal()` to reveal a newly rendered, immutable block line
+by line through a soft gradient:
+
+```swift
+EnrichedMarkdownText(completedBlock)
+    .markdownInitialReveal()
+```
+
+The animation starts after native text layout, runs through Core Animation, and
+leaves text storage and layout unchanged. Reduce Motion shows the content
+immediately. The option defaults to `false`. For a streaming chat, buffer blocks
+until their syntax and line wrapping are stable, and keep each completed block
+in its own view. This modifier animates the first render of a view; it does not
+repair or stabilize incomplete Markdown.
