@@ -4,6 +4,7 @@ import UIKit
 struct MarkdownTextViewRepresentable: UIViewRepresentable {
     let attributedText: NSAttributedString
     let source: RenderedSource?
+    let isEmptySource: Bool
     let isBottomMarginEnabled: Bool
     let styleConfig: MarkdownStyleConfiguration
     /// The SwiftUI `openURL` action: where a tap goes when no legacy
@@ -13,7 +14,7 @@ struct MarkdownTextViewRepresentable: UIViewRepresentable {
     let onLinkLongPress: ((URL) -> Void)?
     let selectionMenuConfig: MarkdownSelectionMenu
     let isSelectionEnabled: Bool
-    let initialRevealEnabled: Bool
+    let initialReveal: MarkdownInitialReveal?
     let selectionColor: Color?
     let onTaskListItemTap: ((TaskListInteraction.Hit) -> Void)?
     let spoilerOverlay: any SpoilerOverlayProvider
@@ -41,7 +42,7 @@ struct MarkdownTextViewRepresentable: UIViewRepresentable {
         textView.onLinkPress = onLinkPress ?? openURL
         textView.styleConfig = styleConfig
         textView.isSelectionEnabled = isSelectionEnabled
-        textView.initialRevealEnabled = initialRevealEnabled
+        textView.initialRevealConfiguration = initialReveal
         textView.tintColor = selectionColor.map { UIColor($0) }
         textView.onTaskListItemTap = onTaskListItemTap
         textView.spoilerOverlays.provider = spoilerOverlay
@@ -50,9 +51,13 @@ struct MarkdownTextViewRepresentable: UIViewRepresentable {
         textView.accessibilityLabels = accessibilityLabels
         textView.isBottomMarginEnabled = isBottomMarginEnabled
         textView.setMarkdownAttributedText(attributedText)
+        if source != nil || isEmptySource {
+            textView.layoutInitialReveal(content: attributedText)
+        }
     }
 
     static func dismantleUIView(_ uiView: MarkdownTextView, coordinator: Coordinator) {
+        uiView.cancelInitialReveal()
         uiView.delegate = nil
         uiView.onTaskListItemTap = nil
         uiView.onSpoilerTap = nil

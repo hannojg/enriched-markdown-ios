@@ -855,17 +855,22 @@ In the monorepo, `core/md4c` and `core/parser` are symlinks into the shared C++ 
 
 ## Initial gradient reveal
 
-Use `.markdownInitialReveal()` to reveal a newly rendered, immutable block line
-by line through a soft gradient:
+Own a `MarkdownRevealSequence` per message to reveal immutable blocks in reading
+order, line by line through a soft gradient:
 
 ```swift
-EnrichedMarkdownText(completedBlock)
-    .markdownInitialReveal()
+@State private var revealSequence = MarkdownRevealSequence()
+
+// Inside ForEach, with consecutive indices starting at zero:
+EnrichedMarkdownText(completedBlocks[index])
+    .markdownInitialReveal(in: revealSequence, at: index)
 ```
 
 The animation starts after native text layout, runs through Core Animation, and
 leaves text storage and layout unchanged. Reduce Motion shows the content
-immediately. The option defaults to `false`. For a streaming chat, buffer blocks
+immediately. Later blocks can lay out while waiting, but only start revealing
+after all earlier indices finish. Create a new sequence when replacing a message;
+call `cancel()` to remove its masks and stop further animations. For a streaming chat, buffer blocks
 until their syntax and line wrapping are stable, and keep each completed block
 in its own view. This modifier animates the first render of a view; it does not
 repair or stabilize incomplete Markdown.

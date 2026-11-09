@@ -1,5 +1,5 @@
 import SwiftUI
 
 struct MarkdownInitialRevealKey: EnvironmentKey {
-    static let defaultValue = false
+    static let defaultValue: MarkdownInitialReveal? = nil
 }

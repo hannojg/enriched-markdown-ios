@@ -28,16 +28,28 @@ final class MarkdownTextView: UITextView, SelectionHandleTouchReporting, Markdow
     /// document. This can.
     private var renderedText: NSAttributedString?
 
+    private var initialRevealContentReady = false
     private lazy var initialReveal = MarkdownInitialRevealAnimator(textView: self)
-    var initialRevealEnabled = false {
+    var initialRevealConfiguration: MarkdownInitialReveal? {
         didSet {
-            guard initialRevealEnabled != oldValue else { return }
-            if initialRevealEnabled {
-                initialReveal.prepare()
+            guard initialRevealConfiguration != oldValue else { return }
+            initialRevealContentReady = false
+            if let initialRevealConfiguration {
+                initialReveal.prepare(initialRevealConfiguration)
             } else {
-                initialReveal.finish()
+                initialReveal.detach()
             }
         }
+    }
+
+    func layoutInitialReveal(content: NSAttributedString) {
+        guard initialRevealConfiguration != nil else { return }
+        initialRevealContentReady = true
+        initialReveal.layout(content: content)
+    }
+
+    func cancelInitialReveal() {
+        initialReveal.detach()
     }
 
     private struct CachedFit {
@@ -414,7 +426,7 @@ final class MarkdownTextView: UITextView, SelectionHandleTouchReporting, Markdow
         trackEnclosingScrollView()
         setDecorationNeedsDisplay()
         spoilerOverlays.update()
-        if initialRevealEnabled, let renderedText, renderedText.length > 0 {
+        if initialRevealContentReady, let renderedText {
             initialReveal.layout(content: renderedText)
         }
     }

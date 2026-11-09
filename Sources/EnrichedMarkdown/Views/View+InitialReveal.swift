@@ -2,9 +2,10 @@ import SwiftUI
 
 public extension View {
     /// Reveals the first rendered content, line by line through a soft gradient.
-    /// Starts after native layout and respects Reduce Motion. Defaults to false.
-    /// Use a separate view for each immutable block when displaying a stream.
-    func markdownInitialReveal(_ enabled: Bool = true) -> some View {
-        environment(\.markdownInitialReveal, enabled)
+    /// Blocks wait for all earlier indices in the same sequence to finish.
+    /// Start indices at zero without gaps. Respects Reduce Motion.
+    func markdownInitialReveal(_ enabled: Bool = true, in sequence: MarkdownRevealSequence, at index: Int) -> some View {
+        let reveal = enabled ? MarkdownInitialReveal(sequence: sequence, index: index) : nil
+        return environment(\.markdownInitialReveal, reveal)
     }
 }

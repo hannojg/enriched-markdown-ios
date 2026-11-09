@@ -120,6 +120,7 @@ extension MarkdownTextViewRepresentable {
         MarkdownTextViewRepresentable(
             attributedText: attributedText,
             source: nil,
+            isEmptySource: false,
             isBottomMarginEnabled: isBottomMarginEnabled,
             styleConfig: .baseline(),
             openURL: openURL,

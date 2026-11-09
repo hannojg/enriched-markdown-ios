@@ -8,28 +8,42 @@ final class MarkdownInitialRevealAnimator {
     private let mask = CALayer()
     private var state = State.idle
     private var revealSize = CGSize.zero
+    private weak var sequence: MarkdownRevealSequence?
+    private var index = 0
+    private var generation = 0
+    private var content: NSAttributedString?
 
     init(textView: UITextView) {
         self.textView = textView
     }
 
-    func prepare() {
-        guard state == .idle, let textView else { return }
-        guard !UIAccessibility.isReduceMotionEnabled else {
-            state = .finished
-            return
-        }
+    func prepare(_ reveal: MarkdownInitialReveal) {
+        detach()
+        guard let textView else { return }
         state = .waiting
+        sequence = reveal.sequence
+        index = reveal.index
         textView.layer.mask = mask
+        reveal.sequence.register(self, at: index)
     }
 
     func layout(content: NSAttributedString) {
-        guard let textView else { return }
-        if state == .revealing, textView.bounds.size != revealSize {
+        guard state == .waiting || state == .revealing else { return }
+        self.content = content
+        if let textView, state == .revealing, textView.bounds.size != revealSize {
             finish()
             return
         }
-        guard state == .waiting, textView.bounds.width > 0, textView.bounds.height > 0 else { return }
+        sequence?.startNext()
+    }
+
+    func start() {
+        guard state == .waiting, let textView, let content else { return }
+        guard !UIAccessibility.isReduceMotionEnabled, content.length > 0 else {
+            finish()
+            return
+        }
+        guard textView.bounds.width > 0, textView.bounds.height > 0 else { return }
         let proposal = CGSize(width: textView.bounds.width, height: .greatestFiniteMagnitude)
         let fitted = textView.sizeThatFits(proposal)
         guard fitted.height <= textView.bounds.height + 0.5 else { return }
@@ -43,12 +57,19 @@ final class MarkdownInitialRevealAnimator {
                 rows.append((frame, range))
             }
         }
-        guard !rows.isEmpty else { return }
+        guard !rows.isEmpty else {
+            finish()
+            return
+        }
         state = .revealing
         revealSize = textView.bounds.size
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        CATransaction.setCompletionBlock { [weak self] in self?.finish() }
+        let generation = self.generation
+        CATransaction.setCompletionBlock { [weak self] in
+            guard let self, self.generation == generation else { return }
+            self.finish()
+        }
         mask.frame = textView.bounds
         let width = textView.bounds.width
         let start = CACurrentMediaTime()
@@ -89,11 +110,23 @@ final class MarkdownInitialRevealAnimator {
         CATransaction.commit()
     }
 
+    func detach() {
+        sequence?.remove(self, at: index)
+        sequence = nil
+        generation += 1
+        finish()
+        content = nil
+        state = .idle
+    }
+
     func finish() {
+        guard state != .finished else { return }
         state = .finished
+        content = nil
         if textView?.layer.mask === mask {
             textView?.layer.mask = nil
         }
         mask.sublayers = nil
+        sequence?.complete(self, at: index)
     }
 }
