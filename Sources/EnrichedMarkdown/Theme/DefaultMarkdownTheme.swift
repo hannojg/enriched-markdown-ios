@@ -90,10 +90,12 @@ enum DefaultMarkdownTheme {
     /// Split out to keep `make()` under SwiftLint's body length. The alert
     /// palette is GitHub's, shared with the React Native package.
     private static var quoteStyles: MarkdownThemeGroup {
-        MarkdownThemeGroup(contents: [
+        let quoteBackground = Color(uiColor: .quaternarySystemFill)
+        return MarkdownThemeGroup(contents: [
             Blockquote()
                 .font(.body)
                 .foregroundStyle(.secondary)
+                .background(quoteBackground)
                 .border(.tint, width: 3)
                 .gapWidth(16)
                 .marginBottom(16),
